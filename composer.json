@@ -1,0 +1,5 @@
+{
+    "require": {
+        "cvuorinen/phpdoc-markdown-public": "^0.2.0"
+    }
+}

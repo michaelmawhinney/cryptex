@@ -1,5 +1,14 @@
 <?php
-
+/**
+ * Cryptex is a simple PHP class that performs 2-way authenticated (secret-key) encryption with associated data using XChaCha20 + Poly1305.
+ *
+ * @category   Encryption
+ * @package    Cryptex
+ * @author     Michael Mawhinney <michael.mawhinney.jr@gmail.com>
+ * @copyright  2018
+ * @license    https://www.gnu.org/licenses/gpl-3.0.en.html  GNU General Public License v3.0
+ * @version    Release: 1.0.0
+ */
 final class Cryptex
 {
     /**
