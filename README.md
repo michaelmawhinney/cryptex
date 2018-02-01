@@ -13,7 +13,7 @@
 include "class.cryptex.php";
 
 $plaintext = "hello world!";
-$secretkey = "12345";
+$secretkey = "12345"; // same combination on my luggage
 $saltvalue = random_bytes(32);
 
 $encrypted = Cryptex::encrypt($plaintext, $secretkey, $saltvalue);
