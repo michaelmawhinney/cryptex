@@ -1,4 +1,4 @@
-**Cryptex** is a simple PHP class that performs 2-way authenticated (secret-key) encryption with associated data using XChaCha20 + Poly1305
+**Cryptex** is a simple PHP class that performs 2-way authenticated (secret-key) encryption with associated data using XChaCha20 + Poly1305.
 
 # Requirements
 
