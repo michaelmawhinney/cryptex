@@ -23,7 +23,7 @@ final class Cryptex
      * @param string $salt      salt value (optional)
      * @return string
      */
-    public static function encrypt(string $plaintext, string $key, string $salt = null)
+    public static function encrypt(string $plaintext, string $key, string $salt = null): string
     {
         // Generate a derived binary key using the provided key (and optional salt)
         $bin_key = hash_pbkdf2(
@@ -69,7 +69,7 @@ final class Cryptex
      * @param string $salt          salt used during encryption
      * @return string
      */
-    public static function decrypt(string $ciphertext, string $key, string $salt = null)
+    public static function decrypt(string $ciphertext, string $key, string $salt = null): string
     {
         // Generate a derived binary key using the provided key (and optional salt)
         $bin_key = hash_pbkdf2(
