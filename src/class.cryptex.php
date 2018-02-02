@@ -26,7 +26,7 @@ final class Cryptex
     public static function encrypt(string $plaintext, string $key, string $salt = null): string
     {
         // Generate a derived binary key
-        $bin_key = self::getBinKey($key, $salt);
+        $bin_key = self::genBinKey($key, $salt);
 
         // Generate a nonce value of the correct size
         $nonce = random_bytes(
