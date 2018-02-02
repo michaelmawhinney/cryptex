@@ -1,28 +1,37 @@
-**Cryptex** is a simple PHP class that performs 2-way authenticated (secret-key) encryption with associated data using XChaCha20 + Poly1305.
+<img src="https://img.mikeycomicsinc.com/cryptex_xl.png" width="300px">
+
+# Cryptex: 2-way Authenticated Encryption Class
+
+Cryptex is a simple PHP class that performs 2-way authenticated encryption using XChaCha20 + Poly1305.
+
 
 # Requirements
 
-* PHP 7.2 or newer
+* PHP 7.2.0 or newer
 
 
-# Basic Example
+# Usage
 
 ```
 <?php
 
 include "class.cryptex.php";
 
-$plaintext = "hello world!";
-$secretkey = "12345"; // same combination on my luggage
-$saltvalue = random_bytes(32);
+$plaintext = "You're a certified prince.";
+$secret_key = "1-2-3-4-5"; // same combination on my luggage
+$salt = random_bytes(32);
 
-$encrypted = Cryptex::encrypt($plaintext, $secretkey, $saltvalue);
-$decrypted = Cryptex::decrypt($encrypted, $secretkey, $saltvalue);
+try {
+    $ciphertext = Cryptex::encrypt($plaintext, $secret_key, $salt);
+    $result = Cryptex::decrypt($ciphertext, $secret_key, $salt);
+} catch (Exception $e) {
+    die($e->getMessage());
+}
 
-if (hash_equals($plaintext, $decrypted)) {
-    echo "success";
+if (hash_equals($plaintext, $result)) {
+    echo "pass";
 } else {
-    echo "failure";
+    echo "fail";
 }
 
 // Output: success
