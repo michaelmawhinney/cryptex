@@ -115,7 +115,6 @@ final class Cryptex
         }
 
         // Wipe sensitive data and return the decrypted data
-        sodium_memzero($ciphertext);
         sodium_memzero($key);
         $salt === null || sodium_memzero($salt);
         return $plaintext;
