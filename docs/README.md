@@ -37,6 +37,10 @@ Cryptex::encrypt( string $plaintext, string $key, string $salt = null ): string
 | `$salt` | **string** | salt value (optional) |
 
 
+**Return Value:**
+
+encrypted data (hex-encoded)
+
 
 
 ---
@@ -58,8 +62,12 @@ Cryptex::decrypt( string $ciphertext, string $key, string $salt = null ): string
 |-----------|------|-------------|
 | `$ciphertext` | **string** | encrypted data |
 | `$key` | **string** | encryption key |
-| `$salt` | **string** | salt used during encryption |
+| `$salt` | **string** | salt value (if applicable) |
 
+
+**Return Value:**
+
+unencrypted data
 
 
 

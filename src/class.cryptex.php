@@ -21,7 +21,7 @@ final class Cryptex
      * @param string $plaintext unencrypted data
      * @param string $key       encryption key
      * @param string $salt      salt value (optional)
-     * @return string
+     * @return string           encrypted data (hex-encoded)
      */
     public static function encrypt(string $plaintext, string $key, string $salt = null): string
     {
@@ -33,8 +33,8 @@ final class Cryptex
             SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_NPUBBYTES
         );
 
-        // Encrypt the data, prepend the nonce, and base64 encode
-        $ciphertext = base64_encode(
+        // Encrypt the data, prepend the nonce, and hex encode
+        $ciphertext = sodium_bin2hex(
             $nonce .
             sodium_crypto_aead_xchacha20poly1305_ietf_encrypt(
                 $plaintext,
@@ -59,16 +59,16 @@ final class Cryptex
      *
      * @param string $ciphertext    encrypted data
      * @param string $key           encryption key
-     * @param string $salt          salt used during encryption
-     * @return string
+     * @param string $salt          salt value (if applicable)
+     * @return string               unencrypted data
      */
     public static function decrypt(string $ciphertext, string $key, string $salt = null): string
     {
         // Generate a derived binary key
         $bin_key = self::genBinKey($key, $salt);
 
-        // Base64 decode
-        $decoded = base64_decode($ciphertext);
+        // Hex decode
+        $decoded = sodium_hex2bin($ciphertext);
         if ($decoded === false) {
             throw new Exception('Decoding failure');
         }
@@ -111,7 +111,7 @@ final class Cryptex
      *
      * @param string $key   encryption key
      * @param string $salt  salt value (optional)
-     * @return string
+     * @return string       derived binary key
      */
     private static function genBinKey(string $key, ?string $salt): string
     {
