@@ -25,15 +25,8 @@ final class Cryptex
      */
     public static function encrypt(string $plaintext, string $key, string $salt = null): string
     {
-        // Generate a derived binary key using the provided key (and optional salt)
-        $bin_key = hash_pbkdf2(
-            'sha256',
-            $key,
-            $salt,
-            10000,
-            SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_KEYBYTES,
-            true
-        );
+        // Generate a derived binary key
+        $bin_key = self::getBinKey($key, $salt);
 
         // Generate a nonce value of the correct size
         $nonce = random_bytes(
@@ -71,15 +64,8 @@ final class Cryptex
      */
     public static function decrypt(string $ciphertext, string $key, string $salt = null): string
     {
-        // Generate a derived binary key using the provided key (and optional salt)
-        $bin_key = hash_pbkdf2(
-            'sha256',
-            $key,
-            $salt,
-            10000,
-            SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_KEYBYTES,
-            true
-        );
+        // Generate a derived binary key
+        $bin_key = self::genBinKey($key, $salt);
 
         // Base64 decode
         $decoded = base64_decode($ciphertext);
@@ -118,6 +104,25 @@ final class Cryptex
         sodium_memzero($key);
         $salt === null || sodium_memzero($salt);
         return $plaintext;
+    }
+
+    /**
+     * Generate a derived binary key using PBKDF2 with SHA-256
+     *
+     * @param string $key   encryption key
+     * @param string $salt  salt value (optional)
+     * @return string
+     */
+    private static function genBinKey(string $key, ?string $salt): string
+    {
+        return hash_pbkdf2(
+            'sha256',
+            $key,
+            $salt,
+            10000,
+            SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_KEYBYTES,
+            true
+        );
     }
 }
 
