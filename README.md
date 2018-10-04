@@ -14,14 +14,14 @@ Cryptex is a simple PHP class that performs 2-way authenticated encryption using
 
 The preferred method of installation is with Packagist and Composer. Run the following command to install the package and add it as a requirement to your project's composer.json:
 
-composer require michaelmawhinney/Cryptex
+`composer require michaelmawhinney/Cryptex`
 
 
 # Usage
 
 **Always use a $salt value and always store or transmit your $secret_key and $salt values securely.**
 
-```
+```php
 <?php
 require 'vendor/autoload.php';
 
