@@ -35,6 +35,8 @@ try {
 
     // Encrypt the plaintext
     $ciphertext = Cryptex::encrypt($plaintext, $secret_key, $salt);
+    // example result: 
+    // 4c406399a8830dbf670832b298980280d71bfb8cba53246ed45c9b6e6fc753bc100da3d10d4bf0d406d8afd18b8a5a79f44e50424ed0970914490706418c5725258e
 
     // Decrypt the ciphertext
     $result = Cryptex::decrypt($ciphertext, $secret_key, $salt);
