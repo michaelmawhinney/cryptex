@@ -1,4 +1,6 @@
 <?php
+namespace michaelmawhinney;
+
 /**
  * Cryptex performs 2-way authenticated encryption using XChaCha20 + Poly1305.
  *
