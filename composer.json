@@ -1,5 +1,5 @@
 {
-    "name": "michaelmawhinney/cryptex",
+    "name": "michaelmawhinney/Cryptex",
     "description": "A simple PHP class for 2-way authenticated encryption using XChaCha20 + Poly1305 (libsodium)",
 
     "keywords": ["encryption", "decryption", "libsodium", "xchacha20", "poly1305"],
@@ -18,7 +18,11 @@
     },
     "autoload": {
         "psr-4": {
-            "Cryptex\\": "src/"
+            "michaelmawhinney\\": "src/"
         }
     }
 }
+
+
+
+
