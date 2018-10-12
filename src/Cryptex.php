@@ -13,7 +13,7 @@ namespace michaelmawhinney;
  * @author Michael Mawhinney <michael.mawhinney.jr@gmail.com>
  * @copyright 2018
  * @license https://opensource.org/licenses/MIT/ MIT
- * @version Release: 3.0.0
+ * @version Release: 3.0.1
  */
 final class Cryptex
 {
@@ -127,5 +127,3 @@ final class Cryptex
         );
     }
 }
-
-?>
