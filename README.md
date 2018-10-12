@@ -19,7 +19,7 @@ The preferred method of installation is with Packagist and Composer. Run the fol
 
 # Usage
 
-**Always use a $salt value and always store or transmit your $secret_key and $salt values securely.**
+**Always use a `$salt` value. Always store or transmit your `$secret_key` and `$salt` values securely.**
 
 ```php
 <?php

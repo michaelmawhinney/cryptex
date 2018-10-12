@@ -12,8 +12,8 @@ namespace michaelmawhinney;
  * @package Cryptex
  * @author Michael Mawhinney <michael.mawhinney.jr@gmail.com>
  * @copyright 2018
- * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU GPLv3
- * @version Release: 1.0.0
+ * @license https://opensource.org/licenses/MIT/ MIT
+ * @version Release: 3.0.0
  */
 final class Cryptex
 {
