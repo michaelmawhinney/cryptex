@@ -25,7 +25,7 @@ The preferred method of installation is with Packagist and Composer. Run the fol
 <?php
 require 'vendor/autoload.php';
 
-use michaelmawhinney\Cryptex;
+use cryptex\Cryptex;
 
 $plaintext = "You're a certified prince.";
 $secret_key = "1-2-3-4-5"; // same combination on my luggage

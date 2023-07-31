@@ -6,8 +6,7 @@
     "license": "MIT",
     "authors": [
         {
-            "name": "Michael R Mawhinney Jr",
-            "email": "michael.mawhinney.jr@gmail.com",
+            "name": "Michael Mawhinney",
             "homepage": "https://michaelmawhinney.com",
             "role": "Developer"
         }
@@ -17,7 +16,7 @@
     },
     "autoload": {
         "psr-4": {
-            "michaelmawhinney\\": "src/"
+            "cryptex\\": "src/"
         }
     }
 }

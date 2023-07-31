@@ -1,5 +1,5 @@
 <?php
-namespace michaelmawhinney;
+namespace cryptex;
 
 /**
  * Cryptex performs 2-way authenticated encryption using XChaCha20 + Poly1305.
@@ -10,7 +10,7 @@ namespace michaelmawhinney;
  *
  * @category Encryption/Decryption
  * @package Cryptex
- * @author Michael Mawhinney <michael.mawhinney.jr@gmail.com>
+ * @author Michael Mawhinney
  * @copyright 2023
  * @license https://opensource.org/licenses/MIT/ MIT
  * @version Release: 4.0.0
