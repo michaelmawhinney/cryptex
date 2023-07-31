@@ -1,7 +1,7 @@
 {
     "name": "michaelmawhinney/cryptex",
     "description": "A simple PHP class for 2-way authenticated encryption using XChaCha20 + Poly1305 (libsodium)",
-    "keywords": ["encryption", "decryption", "libsodium", "xchacha20", "poly1305"],
+    "keywords": ["encryption", "decryption", "libsodium", "xchacha20", "poly1305", "argon2"],
     "homepage": "https://github.com/michaelmawhinney/cryptex",
     "license": "MIT",
     "authors": [
@@ -13,7 +13,7 @@
         }
     ],
     "require": {
-        "php": ">=7.2.0"
+        "php": ">=8.1"
     },
     "autoload": {
         "psr-4": {

@@ -7,7 +7,7 @@ Cryptex is a simple PHP class that performs 2-way authenticated encryption using
 
 # Requirements
 
-* PHP 7.2.0 or newer
+* PHP 8.1 or newer
 
 
 # Installation
@@ -19,7 +19,7 @@ The preferred method of installation is with Packagist and Composer. Run the fol
 
 # Usage
 
-**Always use a `$salt` value. Always store or transmit your `$secret_key` and `$salt` values securely.**
+**Always store or transmit your `$secret_key` and `$salt` values securely.**
 
 ```php
 <?php
@@ -29,7 +29,7 @@ use michaelmawhinney\Cryptex;
 
 $plaintext = "You're a certified prince.";
 $secret_key = "1-2-3-4-5"; // same combination on my luggage
-$salt = random_bytes(32);
+$salt = random_bytes(SODIUM_CRYPTO_PWHASH_SALTBYTES);
 
 try {
 
