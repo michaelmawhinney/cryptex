@@ -37,31 +37,40 @@ final class Cryptex
      */
     public static function encrypt(string $plaintext, string $key, string $salt): string
     {
-        // Generate a derived binary key
-        $binaryKey = self::generateBinaryKey($key, $salt);
+        try {
+            // Generate a derived binary key
+            $binaryKey = self::generateBinaryKey($key, $salt);
 
-        // Generate a nonce value of the correct size
-        $nonce = random_bytes(self::NONCE_LENGTH);
+            // Generate a nonce value of the correct size
+            $nonce = random_bytes(self::NONCE_LENGTH);
 
-        // Encrypt the data, prepend the nonce, and hex encode
-        $ciphertext = sodium_bin2hex(
-            $nonce .
-            sodium_crypto_aead_xchacha20poly1305_ietf_encrypt(
-                $plaintext,
-                '',
-                $nonce,
-                $binaryKey
-            )
-        );
-        if ($ciphertext === false) {
-            throw new Exception('Encoding failure');
+            // Encrypt the data, prepend the nonce, and hex encode
+            $ciphertext = sodium_bin2hex(
+                $nonce .
+                sodium_crypto_aead_xchacha20poly1305_ietf_encrypt(
+                    $plaintext,
+                    '',
+                    $nonce,
+                    $binaryKey
+                )
+            );
+            if ($ciphertext === false) {
+                throw new Exception('Encoding failure');
+            }
+
+            // Return the encrypted data
+            return $ciphertext;
+        } catch (Exception $e) {
+            // Rethrow the exception
+            throw $e;
+        } finally {
+            // Wipe sensitive data
+            sodium_memzero($plaintext);
+            sodium_memzero($key);
+            sodium_memzero($salt);
+            sodium_memzero($binaryKey);
+            sodium_memzero($nonce);
         }
-
-        // Wipe sensitive data and return the encrypted data
-        sodium_memzero($plaintext);
-        sodium_memzero($key);
-        sodium_memzero($salt);
-        return $ciphertext;
     }
 
     /**
@@ -74,51 +83,60 @@ final class Cryptex
      */
     public static function decrypt(string $ciphertext, string $key, string $salt): string
     {
-        // Generate a derived binary key
-        $binaryKey = self::generateBinaryKey($key, $salt);
+        try {
+            // Generate a derived binary key
+            $binaryKey = self::generateBinaryKey($key, $salt);
 
-        // Hex decode
-        $decoded = sodium_hex2bin($ciphertext);
-        if ($decoded === false) {
-            throw new Exception('Decoding failure');
+            // Hex decode
+            $decoded = sodium_hex2bin($ciphertext);
+            if ($decoded === false) {
+                throw new Exception('Decoding failure');
+            }
+
+            // Check the decoded length
+            if (strlen($decoded) < self::NONCE_LENGTH) {
+                throw new Exception('Nonce length mismatch');
+            }
+
+            // Get the nonce value from the decoded data
+            $nonce = mb_substr(
+                $decoded,
+                0,
+                self::NONCE_LENGTH,
+                '8bit'
+            );
+
+            // Get the ciphertext from the decoded data
+            $ciphertext = mb_substr(
+                $decoded,
+                self::NONCE_LENGTH,
+                null,
+                '8bit'
+            );
+
+            // Decrypt the data
+            $plaintext = sodium_crypto_aead_xchacha20poly1305_ietf_decrypt(
+                $ciphertext,
+                '',
+                $nonce,
+                $binaryKey
+            );
+            if ($plaintext === false) {
+                throw new Exception('Decryption failure');
+            }
+
+            // Return the decrypted data
+            return $plaintext;
+        } catch (Exception $e) {
+            // Rethrow the exception
+            throw $e;
+        } finally {
+            // Wipe sensitive data
+            sodium_memzero($key);
+            sodium_memzero($salt);
+            sodium_memzero($binaryKey);
+            sodium_memzero($nonce);
         }
-
-        // Check the decoded length
-        if (strlen($decoded) < self::NONCE_LENGTH) {
-            throw new Exception('Nonce length mismatch');
-        }
-
-        // Get the nonce value from the decoded data
-        $nonce = mb_substr(
-            $decoded,
-            0,
-            self::NONCE_LENGTH,
-            '8bit'
-        );
-
-        // Get the ciphertext from the decoded data
-        $ciphertext = mb_substr(
-            $decoded,
-            self::NONCE_LENGTH,
-            null,
-            '8bit'
-        );
-
-        // Decrypt the data
-        $plaintext = sodium_crypto_aead_xchacha20poly1305_ietf_decrypt(
-            $ciphertext,
-            '',
-            $nonce,
-            $binaryKey
-        );
-        if ($plaintext === false) {
-            throw new Exception('Decryption failure');
-        }
-
-        // Wipe sensitive data and return the decrypted data
-        sodium_memzero($key);
-        sodium_memzero($salt);
-        return $plaintext;
     }
 
     /**
@@ -140,23 +158,31 @@ final class Cryptex
      */
     private static function generateBinaryKey(string $key, string $salt): string
     {
-        // Salt length requirement check
-        if (strlen($salt) !== self::SALT_LENGTH) {
-            throw new Exception('Bad salt length');
+        try {
+            // Salt length requirement check
+            if (strlen($salt) !== self::SALT_LENGTH) {
+                throw new Exception('Bad salt length');
+            }
+
+            // Generate the derived binary key
+            $derivedKey = sodium_crypto_pwhash(
+                SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_KEYBYTES,
+                $key,
+                $salt,
+                SODIUM_CRYPTO_PWHASH_OPSLIMIT_INTERACTIVE,
+                SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE,
+                SODIUM_CRYPTO_PWHASH_ALG_ARGON2ID13
+            );
+
+            // Return the derived binary key
+            return $derivedKey;
+        } catch (Exception $e) {
+            // Rethrow the exception
+            throw $e;
+        } finally {
+            // Wipe sensitive data
+            sodium_memzero($key);
+            sodium_memzero($salt);
         }
-
-        $derivedKey = sodium_crypto_pwhash(
-            SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_KEYBYTES,
-            $key,
-            $salt,
-            SODIUM_CRYPTO_PWHASH_OPSLIMIT_INTERACTIVE,
-            SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE,
-            SODIUM_CRYPTO_PWHASH_ALG_ARGON2ID13
-        );
-
-        // Wipe sensitive data and return the derived key
-        sodium_memzero($key);
-        sodium_memzero($salt);
-        return $derivedKey;
     }
 }
