@@ -75,11 +75,17 @@ final class Cryptex
             throw new Exception('Decoding failure');
         }
 
+        // Check the decoded length
+        $nonceLength = SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_NPUBBYTES;
+        if (strlen($decoded) < $nonceLength) {
+            throw new Exception('Nonce length mismatch');
+        }
+
         // Get the nonce value from the decoded data
         $nonce = mb_substr(
             $decoded,
             0,
-            SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_NPUBBYTES,
+            $nonceLength,
             '8bit'
         );
 
@@ -119,7 +125,7 @@ final class Cryptex
     {
         // Salt length requirement check
         if (strlen($salt) !== SODIUM_CRYPTO_PWHASH_SALTBYTES) {
-            throw new Exception('Bad salt length.');
+            throw new Exception('Bad salt length');
         }
 
         $derivedKey = sodium_crypto_pwhash(
