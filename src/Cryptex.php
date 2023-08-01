@@ -28,7 +28,7 @@ final class Cryptex
     public static function encrypt(string $plaintext, string $key, string $salt): string
     {
         // Generate a derived binary key
-        $binKey = self::genBinKey($key, $salt);
+        $binKey = self::generateBinaryKey($key, $salt);
 
         // Generate a nonce value of the correct size
         $nonce = random_bytes(
@@ -67,7 +67,7 @@ final class Cryptex
     public static function decrypt(string $ciphertext, string $key, string $salt): string
     {
         // Generate a derived binary key
-        $binKey = self::genBinKey($key, $salt);
+        $binKey = self::generateBinaryKey($key, $salt);
 
         // Hex decode
         $decoded = sodium_hex2bin($ciphertext);
@@ -121,7 +121,7 @@ final class Cryptex
      * @param string $salt  salt value of length SODIUM_CRYPTO_PWHASH_SALTBYTE
      * @return string       derived binary key
      */
-    private static function genBinKey(string $key, string $salt): string
+    private static function generateBinaryKey(string $key, string $salt): string
     {
         // Salt length requirement check
         if (strlen($salt) !== SODIUM_CRYPTO_PWHASH_SALTBYTES) {
