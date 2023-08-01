@@ -18,6 +18,16 @@ namespace cryptex;
 final class Cryptex
 {
     /**
+     * @var int  required length of the nonce value
+     */
+    private const NONCE_LENGTH = \SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_NPUBBYTES;
+
+    /**
+     * @var int  required length of the salt value
+     */
+    private const SALT_LENGTH = \SODIUM_CRYPTO_PWHASH_SALTBYTES;
+
+    /**
      * Encrypt data using XChaCha20 + Poly1305 (from the Sodium crypto library)
      *
      * @param string $plaintext unencrypted data
@@ -31,9 +41,7 @@ final class Cryptex
         $binKey = self::generateBinaryKey($key, $salt);
 
         // Generate a nonce value of the correct size
-        $nonce = random_bytes(
-            SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_NPUBBYTES
-        );
+        $nonce = random_bytes(self::NONCE_LENGTH);
 
         // Encrypt the data, prepend the nonce, and hex encode
         $ciphertext = sodium_bin2hex(
@@ -76,8 +84,7 @@ final class Cryptex
         }
 
         // Check the decoded length
-        $nonceLength = SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_NPUBBYTES;
-        if (strlen($decoded) < $nonceLength) {
+        if (strlen($decoded) < self::NONCE_LENGTH) {
             throw new Exception('Nonce length mismatch');
         }
 
@@ -85,14 +92,14 @@ final class Cryptex
         $nonce = mb_substr(
             $decoded,
             0,
-            $nonceLength,
+            self::NONCE_LENGTH,
             '8bit'
         );
 
         // Get the ciphertext from the decoded data
         $ciphertext = mb_substr(
             $decoded,
-            SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_NPUBBYTES,
+            self::NONCE_LENGTH,
             null,
             '8bit'
         );
@@ -121,7 +128,7 @@ final class Cryptex
      */
     public static function generateSalt(): string
     {
-        return random_bytes(SODIUM_CRYPTO_PWHASH_SALTBYTES);
+        return random_bytes(self::SALT_LENGTH);
     }
 
     /**
@@ -134,7 +141,7 @@ final class Cryptex
     private static function generateBinaryKey(string $key, string $salt): string
     {
         // Salt length requirement check
-        if (strlen($salt) !== SODIUM_CRYPTO_PWHASH_SALTBYTES) {
+        if (strlen($salt) !== self::SALT_LENGTH) {
             throw new Exception('Bad salt length');
         }
 
