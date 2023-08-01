@@ -115,6 +115,16 @@ final class Cryptex
     }
 
     /**
+     * Generate a salt value
+     *
+     * @return string   random salt value of length SODIUM_CRYPTO_PWHASH_SALTBYTES
+     */
+    public static function generateSalt(): string
+    {
+        return random_bytes(SODIUM_CRYPTO_PWHASH_SALTBYTES);
+    }
+
+    /**
      * Generate a derived binary key using Argon2id v1.3
      *
      * @param string $key   encryption key

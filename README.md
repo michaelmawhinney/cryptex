@@ -29,7 +29,7 @@ use cryptex\Cryptex;
 
 $plaintext = "You're a certified prince.";
 $key = "1-2-3-4-5"; // same combination on my luggage
-$salt = random_bytes(SODIUM_CRYPTO_PWHASH_SALTBYTES);
+$salt = Cryptex::generateSalt();
 
 try {
 
