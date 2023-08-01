@@ -19,7 +19,7 @@ The preferred method of installation is with Packagist and Composer. Run the fol
 
 # Usage
 
-**Always store or transmit your `$secret_key` and `$salt` values securely.**
+**Always store or transmit your `$key` and `$salt` values securely.**
 
 ```php
 <?php
@@ -28,18 +28,18 @@ require 'vendor/autoload.php';
 use cryptex\Cryptex;
 
 $plaintext = "You're a certified prince.";
-$secret_key = "1-2-3-4-5"; // same combination on my luggage
+$key = "1-2-3-4-5"; // same combination on my luggage
 $salt = random_bytes(SODIUM_CRYPTO_PWHASH_SALTBYTES);
 
 try {
 
     // Encrypt the plaintext
-    $ciphertext = Cryptex::encrypt($plaintext, $secret_key, $salt);
+    $ciphertext = Cryptex::encrypt($plaintext, $key, $salt);
     // example result: 
     // 4c406399a8830dbf670832b298980280d71bfb8cba53246ed45c9b6e6fc753bc100da3d10d4bf0d406d8afd18b8a5a79f44e50424ed0970914490706418c5725258e
 
     // Decrypt the ciphertext
-    $result = Cryptex::decrypt($ciphertext, $secret_key, $salt);
+    $result = Cryptex::decrypt($ciphertext, $key, $salt);
 
 } catch (Exception $e) {
 

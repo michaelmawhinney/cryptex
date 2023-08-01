@@ -28,7 +28,7 @@ final class Cryptex
     public static function encrypt(string $plaintext, string $key, string $salt): string
     {
         // Generate a derived binary key
-        $bin_key = self::genBinKey($key, $salt);
+        $binKey = self::genBinKey($key, $salt);
 
         // Generate a nonce value of the correct size
         $nonce = random_bytes(
@@ -42,7 +42,7 @@ final class Cryptex
                 $plaintext,
                 '',
                 $nonce,
-                $bin_key
+                $binKey
             )
         );
         if ($ciphertext === false) {
@@ -67,7 +67,7 @@ final class Cryptex
     public static function decrypt(string $ciphertext, string $key, string $salt): string
     {
         // Generate a derived binary key
-        $bin_key = self::genBinKey($key, $salt);
+        $binKey = self::genBinKey($key, $salt);
 
         // Hex decode
         $decoded = sodium_hex2bin($ciphertext);
@@ -96,7 +96,7 @@ final class Cryptex
             $ciphertext,
             '',
             $nonce,
-            $bin_key
+            $binKey
         );
         if ($plaintext === false) {
             throw new Exception('Decryption failure');
