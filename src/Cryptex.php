@@ -44,19 +44,19 @@ final class Cryptex
             // Generate a nonce value of the correct size
             $nonce = random_bytes(self::NONCE_LENGTH);
 
-            // Encrypt the data, prepend the nonce, and hex encode
-            $ciphertext = sodium_bin2hex(
-                $nonce .
-                sodium_crypto_aead_xchacha20poly1305_ietf_encrypt(
-                    $plaintext,
-                    '',
-                    $nonce,
-                    $binaryKey
-                )
+            // Encrypt the data
+            $encryptedData = sodium_crypto_aead_xchacha20poly1305_ietf_encrypt(
+                $plaintext,
+                '',
+                $nonce,
+                $binaryKey
             );
-            if ($ciphertext === false) {
-                throw new Exception('Encoding failure');
+            if ($encryptedData === false) {
+                throw new Exception('Encryption failure');
             }
+
+            // Prepend the nonce, and hex encode
+            $ciphertext = sodium_bin2hex($nonce . $encryptedData);
 
             // Return the encrypted data
             return $ciphertext;
