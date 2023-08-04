@@ -46,7 +46,7 @@ final class Cryptex
     {
         try {
             // Generate a derived binary key
-            $binaryKey = self::generateBinaryKey($key, $salt);
+            $derivedKey = self::generateDerivedKey($key, $salt);
 
             // Generate a nonce value of the correct size
             $nonce = random_bytes(self::NONCE_LENGTH);
@@ -56,7 +56,7 @@ final class Cryptex
                 $plaintext,
                 '',
                 $nonce,
-                $binaryKey
+                $derivedKey
             );
             if ($encryptedData === false) {
                 throw new EncryptionException('Failed to encrypt the data');
@@ -75,7 +75,7 @@ final class Cryptex
             sodium_memzero($plaintext);
             sodium_memzero($key);
             sodium_memzero($salt);
-            sodium_memzero($binaryKey);
+            sodium_memzero($derivedKey);
         }
     }
 
@@ -91,7 +91,7 @@ final class Cryptex
     {
         try {
             // Generate a derived binary key
-            $binaryKey = self::generateBinaryKey($key, $salt);
+            $derivedKey = self::generateDerivedKey($key, $salt);
 
             // Hex decode
             $decoded = sodium_hex2bin($ciphertext);
@@ -122,7 +122,7 @@ final class Cryptex
                 $ciphertext,
                 '',
                 $nonce,
-                $binaryKey
+                $derivedKey
             );
             if ($plaintext === false) {
                 throw new DecryptionException('Failed to decrypt the data');
@@ -137,7 +137,7 @@ final class Cryptex
             // Wipe sensitive data
             sodium_memzero($key);
             sodium_memzero($salt);
-            sodium_memzero($binaryKey);
+            sodium_memzero($derivedKey);
         }
     }
 
@@ -158,7 +158,7 @@ final class Cryptex
      * @param string $salt  salt value of length SODIUM_CRYPTO_PWHASH_SALTBYTE
      * @return string       derived binary key
      */
-    private static function generateBinaryKey(string $key, string $salt): string
+    private static function generateDerivedKey(string $key, string $salt): string
     {
         try {
             // Salt length requirement check
