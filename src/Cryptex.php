@@ -6,7 +6,8 @@ namespace cryptex;
  *
  * This class leverages the Sodium crypto library, added to PHP in version 7.2.
  * A salt value of length SODIUM_CRYPTO_PWHASH_SALTBYTES is required and should
- * be randomly generated with a secure function like random_bytes().
+ * be randomly generated with the included generateSalt() function or another
+ * secure function like random_bytes().
  *
  * @category Encryption/Decryption
  * @package Cryptex
