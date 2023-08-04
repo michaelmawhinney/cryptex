@@ -60,21 +60,21 @@ final class CryptexTest extends TestCase
         }
     }
 
+    public function testEncryptDecryptWithInvalidKeyOrSalt(): void
+    {
+        $this->expectException(\TypeError::class);
+        $invalidInputs = [null, '', [], new \stdClass(), true, 'invalid'];
+        foreach ($invalidInputs as $invalidInput) {
+            Cryptex::encrypt($this->ciphertext, $invalidInput, $this->salt);
+            Cryptex::decrypt($this->ciphertext, $invalidInput, $this->salt);
+            Cryptex::encrypt($this->ciphertext, $this->key, $invalidInput);
+            Cryptex::decrypt($this->ciphertext, $this->key, $invalidInput);
+        }
+    }
+
     public function testDecryptWithInvalidCiphertext(): void
     {
         $this->expectException(\Exception::class);
         Cryptex::decrypt('invalid ciphertext', $this->key, $this->salt);
-    }
-
-    public function testDecryptWithInvalidKey(): void
-    {
-        $this->expectException(\Exception::class);
-        Cryptex::decrypt($this->ciphertext, 'invalid key', $this->salt);
-    }
-
-    public function testDecryptWithInvalidSalt(): void
-    {
-        $this->expectException(\Exception::class);
-        Cryptex::decrypt($this->ciphertext, $this->key, 'invalid salt');
     }
 }
