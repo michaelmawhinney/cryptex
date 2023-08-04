@@ -77,4 +77,13 @@ final class CryptexTest extends TestCase
         $this->expectException(\Exception::class);
         Cryptex::decrypt('invalid ciphertext', $this->key, $this->salt);
     }
+
+    public function testLargePlaintext(): void
+    {
+        $largePlaintext = str_repeat('x', 1000000); // 1 million characters
+        $ciphertext = Cryptex::encrypt($largePlaintext, $this->key, $this->salt);
+        $decrypted = Cryptex::decrypt($ciphertext, $this->key, $this->salt);
+
+        $this->assertEquals($largePlaintext, $decrypted);
+    }
 }
