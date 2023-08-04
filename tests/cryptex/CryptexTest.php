@@ -1,5 +1,4 @@
 <?php
-
 namespace cryptex;
 
 use PHPUnit\Framework\TestCase;
