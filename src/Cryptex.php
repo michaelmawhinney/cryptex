@@ -148,7 +148,14 @@ final class Cryptex
      */
     public static function generateSalt(): string
     {
-        return random_bytes(self::SALT_LENGTH);
+        try {
+            $salt = random_bytes(self::SALT_LENGTH);
+            return $salt;
+        } catch (Exception $e) {
+            throw $e;
+        } finally {
+            sodium_memzero($salt);
+        }
     }
 
     /**

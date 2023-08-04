@@ -29,11 +29,14 @@ require 'vendor/autoload.php';
 
 use cryptex\Cryptex;
 
-$plaintext = "You're a certified prince.";
-$key = "1-2-3-4-5"; // same combination on my luggage
-$salt = Cryptex::generateSalt();
-
 try {
+
+    // Your private data and secret key
+    $plaintext = "You're a certified prince.";
+    $key = "1-2-3-4-5"; // same combination on my luggage
+
+    // Generate a secure random salt value
+    $salt = Cryptex::generateSalt();
 
     // Encrypt the plaintext
     $ciphertext = Cryptex::encrypt($plaintext, $key, $salt);
@@ -45,7 +48,7 @@ try {
 
 } catch (Exception $e) {
 
-    // There was some error during encryption, authentication, or decryption
+    // There was some error during salt generation, encryption, authentication, or decryption
     echo 'Caught exception: ' . $e->getMessage() . "\n";
 
 }
@@ -64,7 +67,5 @@ if (hash_equals($plaintext, $result)) {
 }
 
 // The above example will output: Pass
-
-?>
 ```
 
