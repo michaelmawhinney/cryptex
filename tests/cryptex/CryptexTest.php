@@ -65,4 +65,10 @@ final class CryptexTest extends TestCase
         $this->expectException(\Exception::class);
         Cryptex::decrypt('invalid ciphertext', $this->key, $this->salt);
     }
+
+    public function testDecryptWithInvalidKey(): void
+    {
+        $this->expectException(\Exception::class);
+        Cryptex::decrypt($this->ciphertext, 'invalid key', $this->salt);
+    }
 }
