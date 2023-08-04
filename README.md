@@ -1,4 +1,4 @@
-<img src="https://img.mikeycomicsinc.com/cryptex_xl.png" width="300px">
+<img src="https://michaelmawhinney.com/cryptex/logo.gif" width="300px">
 
 # Cryptex: 2-way Authenticated Encryption Class
 
@@ -15,6 +15,8 @@ Cryptex is a simple PHP class that performs 2-way authenticated encryption using
 The preferred method of installation is with Packagist and Composer. The following command installs the package and adds it as a requirement to your project's composer.json:
 
 `composer require michaelmawhinney/cryptex`
+
+You can also download and include the `src/Cryptex.php` manually if you prefer.
 
 
 # Usage
@@ -65,3 +67,4 @@ if (hash_equals($plaintext, $result)) {
 
 ?>
 ```
+

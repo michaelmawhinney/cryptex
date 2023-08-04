@@ -5,6 +5,7 @@
 * [Cryptex](#cryptex)
     * [encrypt](#encrypt)
     * [decrypt](#decrypt)
+    * [generateSalt](#generateSalt)
 
 ## Cryptex
 
@@ -12,7 +13,8 @@ Cryptex performs 2-way authenticated encryption using XChaCha20 + Poly1305.
 
 This class leverages the Sodium crypto library, added to PHP in version 7.2.
 A salt value of length SODIUM_CRYPTO_PWHASH_SALTBYTES is required and should
-be randomly generated with a secure function like random_bytes().
+be randomly generated with the included generateSalt() function or another
+secure function like random_bytes().
 
 * Full name: Cryptex
 
@@ -70,3 +72,23 @@ Cryptex::decrypt( string $ciphertext, string $key, string $salt ): string
 **Return Value:**
 
 unencrypted data
+
+
+
+---
+
+### generateSalt
+
+Securely generate a random salt value of the required length
+
+```php
+Cryptex::generateSalt(): string
+```
+
+
+
+* This method is **static**.
+
+**Return Value:**
+
+salt value (binary string)
