@@ -18,7 +18,6 @@ namespace cryptex;
 
 class EncryptionException extends \Exception {}
 class EncodingException extends EncryptionException {}
-class DecodingException extends EncryptionException {}
 class NonceLengthException extends EncryptionException {}
 class DecryptionException extends EncryptionException {}
 class SaltLengthException extends EncryptionException {}
@@ -96,9 +95,6 @@ final class Cryptex
 
             // Hex decode
             $decoded = sodium_hex2bin($ciphertext);
-            if ($decoded === false) {
-                throw new DecodingException('Failed to decode the ciphertext');
-            }
 
             // Check the decoded length
             if (strlen($decoded) < self::NONCE_LENGTH) {
