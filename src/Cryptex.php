@@ -15,6 +15,14 @@ namespace cryptex;
  * @license https://opensource.org/licenses/MIT/ MIT
  * @version Release: 4.0.0
  */
+
+class EncryptionException extends \Exception {}
+class EncodingException extends EncryptionException {}
+class DecodingException extends EncryptionException {}
+class NonceLengthException extends EncryptionException {}
+class DecryptionException extends EncryptionException {}
+class SaltLengthException extends EncryptionException {}
+
 final class Cryptex
 {
     /**
@@ -52,7 +60,7 @@ final class Cryptex
                 $binaryKey
             );
             if ($encryptedData === false) {
-                throw new Exception('Encryption failure');
+                throw new EncryptionException('Failed to encrypt the data');
             }
 
             // Prepend the nonce, and hex encode
@@ -90,12 +98,12 @@ final class Cryptex
             // Hex decode
             $decoded = sodium_hex2bin($ciphertext);
             if ($decoded === false) {
-                throw new Exception('Decoding failure');
+                throw new DecodingException('Failed to decode the ciphertext');
             }
 
             // Check the decoded length
             if (strlen($decoded) < self::NONCE_LENGTH) {
-                throw new Exception('Nonce length mismatch');
+                throw new NonceLengthException('Decoded data is not the expected length');
             }
 
             // Get the nonce value from the decoded data
@@ -122,7 +130,7 @@ final class Cryptex
                 $binaryKey
             );
             if ($plaintext === false) {
-                throw new Exception('Decryption failure');
+                throw new DecryptionException('Failed to decrypt the data');
             }
 
             // Return the decrypted data
@@ -161,7 +169,7 @@ final class Cryptex
         try {
             // Salt length requirement check
             if (strlen($salt) !== self::SALT_LENGTH) {
-                throw new Exception('Bad salt length');
+                throw new SaltLengthException('Salt is not the expected length');
             }
 
             // Generate the derived binary key
