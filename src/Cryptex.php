@@ -185,6 +185,7 @@ final class Cryptex
             // Wipe sensitive data
             sodium_memzero($key);
             sodium_memzero($salt);
+            sodium_memzero($derivedKey);
         }
     }
 }
