@@ -33,6 +33,13 @@ final class CryptexTest extends TestCase
         $this->ciphertext = Cryptex::encrypt($this->plaintext, $this->key, $this->salt);
     }
 
+    public function testGenerateSalt(): void
+    {
+        $this->assertIsInt($this->saltLength);
+        $this->assertIsString($this->salt);
+        $this->assertEquals($this->saltLength, strlen($this->salt));
+    }
+
     public function testEncryptDecrypt(): void
     {
         $this->assertIsString($this->ciphertext);
@@ -42,11 +49,14 @@ final class CryptexTest extends TestCase
         $this->assertEquals($this->plaintext, $decrypted);
     }
 
-    public function testGenerateSalt(): void
+    public function testEncryptDecryptWithInvalidInput(): void
     {
-        $this->assertIsInt($this->saltLength);
-        $this->assertIsString($this->salt);
-        $this->assertEquals($this->saltLength, strlen($this->salt));
-    }
+        $this->expectException(\TypeError::class);
 
+        $invalidInputs = [null, '', [], new \stdClass(), true];
+        foreach ($invalidInputs as $invalidInput) {
+            Cryptex::encrypt($invalidInput, $this->key, $this->salt);
+            Cryptex::decrypt($invalidInput, $this->key, $this->salt);
+        }
+    }
 }
