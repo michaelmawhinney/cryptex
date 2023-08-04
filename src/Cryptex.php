@@ -77,7 +77,6 @@ final class Cryptex
             sodium_memzero($key);
             sodium_memzero($salt);
             sodium_memzero($binaryKey);
-            sodium_memzero($nonce);
         }
     }
 
@@ -143,7 +142,6 @@ final class Cryptex
             sodium_memzero($key);
             sodium_memzero($salt);
             sodium_memzero($binaryKey);
-            sodium_memzero($nonce);
         }
     }
 
