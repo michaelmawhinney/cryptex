@@ -86,4 +86,22 @@ final class CryptexTest extends TestCase
 
         $this->assertEquals($largePlaintext, $decrypted);
     }
+
+    public function testNonAlphanumericCharacters(): void
+    {
+        $nonAlphanumericPlaintext = '!@#$%^&*(){}[]:;"<>,.?/~`|-_=+\\';
+        $ciphertext = Cryptex::encrypt($nonAlphanumericPlaintext, $this->key, $this->salt);
+        $decrypted = Cryptex::decrypt($ciphertext, $this->key, $this->salt);
+
+        $this->assertEquals($nonAlphanumericPlaintext, $decrypted);
+    }
+
+    public function testKeyNonAlphanumericCharacters(): void
+    {
+        $nonAlphanumericKey = '!@#$%^&*(){}[]:;"<>,.?/~`|-_=+\\';
+        $ciphertext = Cryptex::encrypt($this->plaintext, $nonAlphanumericKey, $this->salt);
+        $decrypted = Cryptex::decrypt($ciphertext, $nonAlphanumericKey, $this->salt);
+
+        $this->assertEquals($this->plaintext, $decrypted);
+    }
 }
