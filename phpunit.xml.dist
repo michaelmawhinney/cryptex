@@ -5,8 +5,8 @@
          colors="true"
 >
     <testsuites>
-        <testsuite name="main">
-            <directory suffix="Test.php">.</directory>
+        <testsuite name="Cryptex Test Suite">
+            <directory>tests</directory>
         </testsuite>
     </testsuites>
 </phpunit>
