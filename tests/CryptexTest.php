@@ -12,7 +12,7 @@ use ReflectionClass;
  * @author Michael Mawhinney
  * @copyright 2023
  * @license https://opensource.org/licenses/MIT/ MIT
- * @version Release: 4.0.0
+ * @version 4.0.0
  */
 final class CryptexTest extends TestCase
 {

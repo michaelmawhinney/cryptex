@@ -14,42 +14,7 @@ namespace cryptex;
  * @author Michael Mawhinney
  * @copyright 2023
  * @license https://opensource.org/licenses/MIT/ MIT
- * @version Release: 4.0.0
- */
-
-/**
- * Class EncryptionException
- * Custom exception class for encryption errors.
- */
-class EncryptionException extends \Exception {}
-
-/**
- * Class EncodingException
- * Custom exception class for encoding errors.
- */
-class EncodingException extends EncryptionException {}
-
-/**
- * Class NonceLengthException
- * Custom exception class for nonce length errors.
- */
-class NonceLengthException extends EncryptionException {}
-
-/**
- * Class DecryptionException
- * Custom exception class for decryption errors.
- */
-class DecryptionException extends EncryptionException {}
-
-/**
- * Class SaltLengthException
- * Custom exception class for salt length errors.
- */
-class SaltLengthException extends EncryptionException {}
-
-/**
- * Class Cryptex
- * Handles encryption and decryption with XChaCha20 + Poly1305 (Sodium crypto library).
+ * @version 4.0.0
  */
 final class Cryptex
 {
@@ -235,3 +200,33 @@ final class Cryptex
         }
     }
 }
+
+/**
+ * Class EncryptionException
+ * Custom exception class for encryption errors.
+ */
+class EncryptionException extends \Exception {}
+
+/**
+ * Class EncodingException
+ * Custom exception class for encoding errors.
+ */
+class EncodingException extends EncryptionException {}
+
+/**
+ * Class NonceLengthException
+ * Custom exception class for nonce length errors.
+ */
+class NonceLengthException extends EncryptionException {}
+
+/**
+ * Class DecryptionException
+ * Custom exception class for decryption errors.
+ */
+class DecryptionException extends EncryptionException {}
+
+/**
+ * Class SaltLengthException
+ * Custom exception class for salt length errors.
+ */
+class SaltLengthException extends EncryptionException {}
