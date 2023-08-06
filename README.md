@@ -16,7 +16,7 @@ The preferred method of installation is with Packagist and Composer. The followi
 
 `composer require michaelmawhinney/cryptex`
 
-You can also download and include the `src/Cryptex.php` manually if you prefer.
+You can also download or clone the repo and include the `src/Cryptex.php` manually if you prefer.
 
 
 # Usage
@@ -69,3 +69,22 @@ if (hash_equals($plaintext, $result)) {
 // The above example will output: Pass
 ```
 
+
+# Testing
+
+The PHPUnit test class is in `tests/CryptexTest.php`.
+
+If you installed Cryptex with Composer, you can run the following command in the top-level folder of this project to perform the unit tests:
+
+`./vendor/bin/phpunit --bootstrap vendor/autoload.php tests`
+
+If `phpunit` is already installed on your local system, you can run this command instead:
+
+`phpunit tests`
+
+
+# Generating Documentation
+
+Cryptex uses phpDocumentor to automatically generate documentation whenever changes are made. The generated documentation is [available online here](https://michaelmawhinney.github.io/cryptex/). However if you want to generate the documentation locally, you can run the following command in the top-level folder of this project (requires docker):
+
+`docker run --rm -v "$(pwd):/data" "phpdoc/phpdoc:3" -d src,tests -t docs`
