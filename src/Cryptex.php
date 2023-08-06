@@ -14,34 +14,29 @@ namespace cryptex;
  * @author Michael Mawhinney
  * @copyright 2023
  * @license https://opensource.org/licenses/MIT/ MIT
- * @version Release: 4.0.0
+ * @version 4.0.0
  */
-
-class EncryptionException extends \Exception {}
-class EncodingException extends EncryptionException {}
-class NonceLengthException extends EncryptionException {}
-class DecryptionException extends EncryptionException {}
-class SaltLengthException extends EncryptionException {}
-
 final class Cryptex
 {
     /**
-     * @var int  required length of the nonce value
+     * @var int  Required length of the nonce value
      */
     private const NONCE_LENGTH = \SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_NPUBBYTES;
 
     /**
-     * @var int  required length of the salt value
+     * @var int  Required length of the salt value
      */
     private const SALT_LENGTH = \SODIUM_CRYPTO_PWHASH_SALTBYTES;
 
     /**
-     * Encrypt data using XChaCha20 + Poly1305 (from the Sodium crypto library)
+     * Encrypts data using XChaCha20 + Poly1305 (from the Sodium crypto library).
      *
-     * @param string $plaintext unencrypted data
-     * @param string $key       encryption key
-     * @param string $salt      salt value of length SODIUM_CRYPTO_PWHASH_SALTBYTES
-     * @return string           encrypted data (hex-encoded)
+     * @param string $plaintext Unencrypted data.
+     * @param string $key Encryption key.
+     * @param string $salt Salt value of length SODIUM_CRYPTO_PWHASH_SALTBYTES.
+     * @return string Encrypted data (hex-encoded).
+     *
+     * @throws EncryptionException If the data encryption fails.
      */
     public static function encrypt(string $plaintext, string $key, string $salt): string
     {
@@ -81,12 +76,15 @@ final class Cryptex
     }
 
     /**
-     * Authenticate and decrypt data encrypted by Cryptex (XChaCha20+Poly1305)
+     * Authenticates and decrypts data encrypted by Cryptex (XChaCha20+Poly1305).
      *
-     * @param string $ciphertext    encrypted data
-     * @param string $key           encryption key
-     * @param string $salt          salt value
-     * @return string               unencrypted data
+     * @param string $ciphertext Encrypted data.
+     * @param string $key Encryption key.
+     * @param string $salt Salt value.
+     * @return string Unencrypted data.
+     *
+     * @throws NonceLengthException If the decoded data is not the expected length.
+     * @throws DecryptionException If the data decryption fails.
      */
     public static function decrypt(string $ciphertext, string $key, string $salt): string
     {
@@ -143,9 +141,11 @@ final class Cryptex
     }
 
     /**
-     * Generate a salt value
+     * Generates a salt value.
      *
-     * @return string   random salt value of length SODIUM_CRYPTO_PWHASH_SALTBYTES
+     * @return string Random salt value of length SODIUM_CRYPTO_PWHASH_SALTBYTES.
+     *
+     * @throws Exception If an error occurs while generating the salt value.
      */
     public static function generateSalt(): string
     {
@@ -160,11 +160,14 @@ final class Cryptex
     }
 
     /**
-     * Generate a derived binary key using Argon2id v1.3
+     * Generates a derived binary key using Argon2id v1.3.
      *
-     * @param string $key   encryption key
-     * @param string $salt  salt value of length SODIUM_CRYPTO_PWHASH_SALTBYTE
-     * @return string       derived binary key
+     * @param string $key Encryption key.
+     * @param string $salt Salt value of length SODIUM_CRYPTO_PWHASH_SALTBYTES.
+     * @return string Derived binary key.
+     *
+     * @throws SaltLengthException If the salt is not the expected length.
+     * @throws Exception If an error occurs while generating the derived binary key.
      */
     private static function generateDerivedKey(string $key, string $salt): string
     {
@@ -197,3 +200,33 @@ final class Cryptex
         }
     }
 }
+
+/**
+ * Class EncryptionException
+ * Custom exception class for encryption errors.
+ */
+class EncryptionException extends \Exception {}
+
+/**
+ * Class EncodingException
+ * Custom exception class for encoding errors.
+ */
+class EncodingException extends EncryptionException {}
+
+/**
+ * Class NonceLengthException
+ * Custom exception class for nonce length errors.
+ */
+class NonceLengthException extends EncryptionException {}
+
+/**
+ * Class DecryptionException
+ * Custom exception class for decryption errors.
+ */
+class DecryptionException extends EncryptionException {}
+
+/**
+ * Class SaltLengthException
+ * Custom exception class for salt length errors.
+ */
+class SaltLengthException extends EncryptionException {}
