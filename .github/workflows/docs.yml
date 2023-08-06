@@ -1,0 +1,63 @@
+name: Generate Docs and Deploy to Pages
+
+on:
+  pull_request:
+    branches:
+      - master
+    types:
+      - closed
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  generate-and-deploy:
+    # Only run if PR is merged
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout master branch
+      - name: Checkout master branch
+        uses: actions/checkout@v3
+        with:
+          ref: master
+
+      # Generate docs using phpDocumentor
+      - name: Build with phpDocumentor
+        run: docker run --rm --volume "$(pwd):/data" phpdoc/phpdoc:3 -vv --directory src,tests --target docs
+
+      # Configure git with an email and username
+      - name: Configure git
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions"
+
+      # Recreate the docs-ci branch and push new docs
+      - name: Push to docs-ci branch
+        run: |
+          git fetch
+          git checkout -b docs-ci
+          git add docs/*
+          git commit -m "Generate docs after commit ${GITHUB_SHA} at $(date +'%Y-%m-%d %H:%M:%S %Z')"
+          git push -f origin docs-ci
+
+      # Configure GitHub Pages
+      - name: Configure Pages
+        uses: actions/configure-pages@v3
+
+      # Upload the generated docs static files as an artifact
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: docs
+
+      # Deploy the artifact to GitHub Pages
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v2
