@@ -3,4 +3,8 @@ composer.phar
 /vendor/
 
 # phpDocumentor
-/docs/phpdoc-cache-*/
+phpDocumentor.phar
+.phpdoc/
+
+# PHPUnit
+.phpunit*
