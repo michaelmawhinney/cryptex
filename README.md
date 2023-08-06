@@ -88,3 +88,5 @@ If `phpunit` is already installed on your local system, you can run this command
 Cryptex uses phpDocumentor to automatically generate documentation whenever changes are made. The generated documentation is [available online here](https://michaelmawhinney.github.io/cryptex/). However if you want to generate the documentation locally, you can run the following command in the top-level folder of this project (requires docker):
 
 `docker run --rm -v "$(pwd):/data" "phpdoc/phpdoc:3" -d src,tests -t docs`
+
+If you want to use another method of running/installing phpdoc, refer to the [phpDocumentor documentation](https://www.phpdoc.org/).
