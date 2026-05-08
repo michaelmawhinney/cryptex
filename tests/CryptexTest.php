@@ -1,155 +1,258 @@
 <?php
+
 namespace cryptex;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use ReflectionClass;
+use SodiumException;
 
-/**
- * CryptexTest performs unit testing for the Cryptex class.
- *
- * @category Tests
- * @package Cryptex
- * @author Michael Mawhinney
- * @copyright 2023
- * @license https://opensource.org/licenses/MIT/ MIT
- * @version 4.0.0
- */
 final class CryptexTest extends TestCase
 {
-    /**
-     * @var string Key for encryption and decryption tests.
-     */
-    private $key;
+    private string $key;
 
-    /**
-     * @var string Salt for encryption and decryption tests.
-     */
-    private $salt;
+    private string $salt;
 
-    /**
-     * @var int Length of the salt value.
-     */
-    private $saltLength;
+    private string $plaintext;
 
-    /**
-     * @var string Plaintext string for encryption and decryption tests.
-     */
-    private $plaintext;
+    private string $ciphertext;
 
-    /**
-     * @var string Ciphertext string for encryption and decryption tests.
-     */
-    private $ciphertext;
-
-    /**
-     * Sets up each test by initializing required variables and generating encrypted data for decryption tests.
-     */
     protected function setUp(): void
     {
-        // Access the private vars with reflection
-        $reflection = new ReflectionClass(Cryptex::class);
-        $this->saltLength = $reflection->getReflectionConstant('SALT_LENGTH')->getValue();
-
-        // Set the remaining vars
         $this->key = '1-2-3-4-5';
         $this->salt = Cryptex::generateSalt();
         $this->plaintext = "You're a certified prince.";
         $this->ciphertext = Cryptex::encrypt($this->plaintext, $this->key, $this->salt);
     }
 
-    /**
-     * Tests the `generateSalt()` method.
-     */
-    public function testGenerateSalt(): void
+    public function testGenerateSaltReturnsExpectedLength(): void
     {
-        $this->assertIsInt($this->saltLength);
-        $this->assertIsString($this->salt);
-        $this->assertEquals($this->saltLength, strlen($this->salt));
+        $salt = Cryptex::generateSalt();
+
+        $this->assertSame(SODIUM_CRYPTO_PWHASH_SALTBYTES, strlen($salt));
     }
 
-    /**
-     * Tests the `encrypt()` and `decrypt()` methods with valid inputs.
-     */
-    public function testEncryptDecrypt(): void
+    public function testEncryptDecryptRoundTrip(): void
     {
-        $this->assertIsString($this->ciphertext);
-        $this->assertNotEquals($this->plaintext, $this->ciphertext);
-
         $decrypted = Cryptex::decrypt($this->ciphertext, $this->key, $this->salt);
-        $this->assertEquals($this->plaintext, $decrypted);
+
+        $this->assertNotSame($this->plaintext, $this->ciphertext);
+        $this->assertSame($this->plaintext, $decrypted);
+    }
+
+    public function testRepeatedEncryptionProducesDifferentCiphertext(): void
+    {
+        $otherCiphertext = Cryptex::encrypt($this->plaintext, $this->key, $this->salt);
+
+        $this->assertNotSame($this->ciphertext, $otherCiphertext);
     }
 
     /**
-     * Tests the `encrypt()` and `decrypt()` methods with invalid input values.
+     * @dataProvider invalidSaltLengthProvider
      */
-    public function testEncryptDecryptWithInvalidInput(): void
+    #[DataProvider('invalidSaltLengthProvider')]
+    public function testEncryptRejectsInvalidSaltLength(string $salt): void
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(SaltLengthException::class);
 
-        $invalidInputs = [null, '', [], new \stdClass(), true];
-        foreach ($invalidInputs as $invalidInput) {
-            Cryptex::encrypt($invalidInput, $this->key, $this->salt);
-            Cryptex::decrypt($invalidInput, $this->key, $this->salt);
-        }
+        Cryptex::encrypt($this->plaintext, $this->key, $salt);
     }
 
     /**
-     * Tests the `encrypt()` and `decrypt()` methods with invalid key or salt.
+     * @dataProvider invalidSaltLengthProvider
      */
-    public function testEncryptDecryptWithInvalidKeyOrSalt(): void
+    #[DataProvider('invalidSaltLengthProvider')]
+    public function testDecryptRejectsInvalidSaltLength(string $salt): void
     {
-        $this->expectException(\TypeError::class);
-        $invalidInputs = [null, '', [], new \stdClass(), true, 'invalid'];
-        foreach ($invalidInputs as $invalidInput) {
-            Cryptex::encrypt($this->ciphertext, $invalidInput, $this->salt);
-            Cryptex::decrypt($this->ciphertext, $invalidInput, $this->salt);
-            Cryptex::encrypt($this->ciphertext, $this->key, $invalidInput);
-            Cryptex::decrypt($this->ciphertext, $this->key, $invalidInput);
-        }
+        $this->expectException(SaltLengthException::class);
+
+        Cryptex::decrypt($this->ciphertext, $this->key, $salt);
     }
 
-    /**
-     * Tests the `decrypt()` method with invalid ciphertext.
-     */
-    public function testDecryptWithInvalidCiphertext(): void
+    public function testDecryptRejectsWrongKey(): void
     {
-        $this->expectException(\Exception::class);
+        $this->expectException(DecryptionException::class);
+
+        Cryptex::decrypt($this->ciphertext, 'wrong-key', $this->salt);
+    }
+
+    public function testDecryptRejectsWrongSalt(): void
+    {
+        $this->expectException(DecryptionException::class);
+
+        Cryptex::decrypt($this->ciphertext, $this->key, Cryptex::generateSalt());
+    }
+
+    public function testDecryptRejectsTamperedCiphertext(): void
+    {
+        $tamperedCiphertext = $this->flipLastHexNibble($this->ciphertext);
+
+        $this->expectException(DecryptionException::class);
+
+        Cryptex::decrypt($tamperedCiphertext, $this->key, $this->salt);
+    }
+
+    public function testDecryptRejectsMalformedHexCiphertext(): void
+    {
+        $this->expectException(SodiumException::class);
+
         Cryptex::decrypt('invalid ciphertext', $this->key, $this->salt);
     }
 
-    /**
-     * Tests the `encrypt()` and `decrypt()` methods with a large plaintext string.
-     */
-    public function testLargePlaintext(): void
+    public function testDecryptRejectsTooShortPayload(): void
     {
-        $largePlaintext = str_repeat('x', 1000000); // 1 million characters
-        $ciphertext = Cryptex::encrypt($largePlaintext, $this->key, $this->salt);
-        $decrypted = Cryptex::decrypt($ciphertext, $this->key, $this->salt);
+        $this->expectException(NonceLengthException::class);
 
-        $this->assertEquals($largePlaintext, $decrypted);
+        Cryptex::decrypt('aa', $this->key, $this->salt);
+    }
+
+    public function testEncryptDecryptEmptyPlaintext(): void
+    {
+        $plaintext = '';
+        $ciphertext = Cryptex::encrypt($plaintext, $this->key, $this->salt);
+
+        $this->assertSame($plaintext, Cryptex::decrypt($ciphertext, $this->key, $this->salt));
+    }
+
+    public function testEncryptDecryptBinaryPlaintext(): void
+    {
+        $plaintext = "\x00\x01\x02binary\x00text\xff";
+        $ciphertext = Cryptex::encrypt($plaintext, $this->key, $this->salt);
+
+        $this->assertSame($plaintext, Cryptex::decrypt($ciphertext, $this->key, $this->salt));
+    }
+
+    public function testEncryptDecryptNonAsciiPlaintext(): void
+    {
+        $plaintext = 'naive cafe 漢字';
+        $ciphertext = Cryptex::encrypt($plaintext, $this->key, $this->salt);
+
+        $this->assertSame($plaintext, Cryptex::decrypt($ciphertext, $this->key, $this->salt));
+    }
+
+    public function testEncryptDecryptLargePlaintext(): void
+    {
+        $plaintext = str_repeat('x', 1000000);
+        $ciphertext = Cryptex::encrypt($plaintext, $this->key, $this->salt);
+
+        $this->assertSame($plaintext, Cryptex::decrypt($ciphertext, $this->key, $this->salt));
     }
 
     /**
-     * Tests the `encrypt()` and `decrypt()` methods with a plaintext string that contains non-alphanumeric characters.
+     * @dataProvider invalidPlaintextProvider
      */
-    public function testNonAlphanumericCharacters(): void
+    #[DataProvider('invalidPlaintextProvider')]
+    public function testEncryptRejectsInvalidPlaintextTypes($plaintext): void
     {
-        $nonAlphanumericPlaintext = '!@#$%^&*(){}[]:;"<>,.?/~`|-_=+\\';
-        $ciphertext = Cryptex::encrypt($nonAlphanumericPlaintext, $this->key, $this->salt);
-        $decrypted = Cryptex::decrypt($ciphertext, $this->key, $this->salt);
+        $this->expectException(\TypeError::class);
 
-        $this->assertEquals($nonAlphanumericPlaintext, $decrypted);
+        Cryptex::encrypt($plaintext, $this->key, $this->salt);
     }
 
     /**
-     * Tests the `encrypt()` and `decrypt()` methods with a key that contains non-alphanumeric characters.
+     * @dataProvider invalidCiphertextProvider
      */
-    public function testKeyNonAlphanumericCharacters(): void
+    #[DataProvider('invalidCiphertextProvider')]
+    public function testDecryptRejectsInvalidCiphertextTypes($ciphertext): void
     {
-        $nonAlphanumericKey = '!@#$%^&*(){}[]:;"<>,.?/~`|-_=+\\';
-        $ciphertext = Cryptex::encrypt($this->plaintext, $nonAlphanumericKey, $this->salt);
-        $decrypted = Cryptex::decrypt($ciphertext, $nonAlphanumericKey, $this->salt);
+        $this->expectException(\TypeError::class);
 
-        $this->assertEquals($this->plaintext, $decrypted);
+        Cryptex::decrypt($ciphertext, $this->key, $this->salt);
+    }
+
+    /**
+     * @dataProvider invalidKeyProvider
+     */
+    #[DataProvider('invalidKeyProvider')]
+    public function testEncryptRejectsInvalidKeyTypes($key): void
+    {
+        $this->expectException(\TypeError::class);
+
+        Cryptex::encrypt($this->plaintext, $key, $this->salt);
+    }
+
+    /**
+     * @dataProvider invalidKeyProvider
+     */
+    #[DataProvider('invalidKeyProvider')]
+    public function testDecryptRejectsInvalidKeyTypes($key): void
+    {
+        $this->expectException(\TypeError::class);
+
+        Cryptex::decrypt($this->ciphertext, $key, $this->salt);
+    }
+
+    /**
+     * @dataProvider invalidSaltTypeProvider
+     */
+    #[DataProvider('invalidSaltTypeProvider')]
+    public function testEncryptRejectsInvalidSaltTypes($salt): void
+    {
+        $this->expectException(\TypeError::class);
+
+        Cryptex::encrypt($this->plaintext, $this->key, $salt);
+    }
+
+    /**
+     * @dataProvider invalidSaltTypeProvider
+     */
+    #[DataProvider('invalidSaltTypeProvider')]
+    public function testDecryptRejectsInvalidSaltTypes($salt): void
+    {
+        $this->expectException(\TypeError::class);
+
+        Cryptex::decrypt($this->ciphertext, $this->key, $salt);
+    }
+
+    public static function invalidPlaintextProvider(): array
+    {
+        return [
+            'null' => [null],
+            'array' => [[]],
+            'object' => [new \stdClass()],
+        ];
+    }
+
+    public static function invalidCiphertextProvider(): array
+    {
+        return [
+            'null' => [null],
+            'array' => [[]],
+            'object' => [new \stdClass()],
+        ];
+    }
+
+    public static function invalidKeyProvider(): array
+    {
+        return [
+            'null' => [null],
+            'array' => [[]],
+            'object' => [new \stdClass()],
+        ];
+    }
+
+    public static function invalidSaltTypeProvider(): array
+    {
+        return [
+            'null' => [null],
+            'array' => [[]],
+            'object' => [new \stdClass()],
+        ];
+    }
+
+    public static function invalidSaltLengthProvider(): array
+    {
+        return [
+            'empty' => [''],
+            'short' => ['short'],
+            'long' => [str_repeat('a', SODIUM_CRYPTO_PWHASH_SALTBYTES + 1)],
+        ];
+    }
+
+    private function flipLastHexNibble(string $hex): string
+    {
+        $lastNibble = substr($hex, -1);
+        $replacement = $lastNibble === '0' ? '1' : '0';
+
+        return substr($hex, 0, -1) . $replacement;
     }
 }
