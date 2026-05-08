@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace cryptex;
 
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -103,6 +105,25 @@ final class CryptexTest extends TestCase
         $this->expectException(NonceLengthException::class);
 
         Cryptex::decrypt('aa', $this->key, $this->salt);
+    }
+
+    public function testDecryptRejectsNonceOnlyPayload(): void
+    {
+        $nonceOnlyPayload = sodium_bin2hex(random_bytes(SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_NPUBBYTES));
+
+        $this->expectException(NonceLengthException::class);
+
+        Cryptex::decrypt($nonceOnlyPayload, $this->key, $this->salt);
+    }
+
+    public function testDecryptRejectsNoncePlusTooShortTagPayload(): void
+    {
+        $payload = random_bytes(SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_NPUBBYTES)
+            . str_repeat("\x00", SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_ABYTES - 1);
+
+        $this->expectException(NonceLengthException::class);
+
+        Cryptex::decrypt(sodium_bin2hex($payload), $this->key, $this->salt);
     }
 
     public function testEncryptDecryptEmptyPlaintext(): void
