@@ -7,7 +7,8 @@ Cryptex is a simple PHP class that performs 2-way authenticated encryption using
 
 # Requirements
 
-* PHP 8.1 or newer
+* PHP 8.3 or newer
+* `ext-sodium`
 
 
 # Installation
@@ -74,13 +75,15 @@ if (hash_equals($plaintext, $result)) {
 
 The PHPUnit test class is in `tests/CryptexTest.php`.
 
-If you installed Cryptex with Composer, you can run the following command in the top-level folder of this project to perform the unit tests:
+If you installed Cryptex with Composer, you can run the following commands in the top-level folder of this project:
 
-`./vendor/bin/phpunit --bootstrap vendor/autoload.php tests`
+`composer test`
 
-If `phpunit` is already installed on your local system, you can run this command instead:
+`composer lint`
 
-`phpunit tests`
+The PHPUnit command used by `composer test` is:
+
+`./vendor/bin/phpunit --configuration phpunit.xml.dist`
 
 
 # Generating Documentation
