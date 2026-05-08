@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace cryptex;
 
 /**
@@ -18,15 +21,10 @@ namespace cryptex;
  */
 final class Cryptex
 {
-    /**
-     * @var int  Required length of the nonce value
-     */
     private const NONCE_LENGTH = \SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_NPUBBYTES;
-
-    /**
-     * @var int  Required length of the salt value
-     */
     private const SALT_LENGTH = \SODIUM_CRYPTO_PWHASH_SALTBYTES;
+    private const TAG_LENGTH = \SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_ABYTES;
+    private const MINIMUM_DECODED_PAYLOAD_LENGTH = self::NONCE_LENGTH + self::TAG_LENGTH;
 
     /**
      * Encrypts data using XChaCha20 + Poly1305 (from the Sodium crypto library).
@@ -37,59 +35,30 @@ final class Cryptex
      * @return string Encrypted data (hex-encoded).
      *
      * @throws EncryptionException If the data encryption fails.
+     * @throws SaltLengthException If the salt is not the expected length.
+     * @throws \Random\RandomException If an error occurs while generating the nonce.
+     * @throws \SodiumException If a lower-level Sodium call fails.
      */
     public static function encrypt(string $plaintext, string $key, string $salt): string
     {
         $derivedKey = '';
-        $nonce = '';
-        $encryptedData = '';
-
         try {
-            // Generate a derived binary key
             $derivedKey = self::generateDerivedKey($key, $salt);
-
-            // Generate a nonce value of the correct size
             $nonce = random_bytes(self::NONCE_LENGTH);
-
-            // Encrypt the data
-            $encryptedData = sodium_crypto_aead_xchacha20poly1305_ietf_encrypt(
+            $encryptedPayload = sodium_crypto_aead_xchacha20poly1305_ietf_encrypt(
                 $plaintext,
                 '',
                 $nonce,
                 $derivedKey
             );
-            if ($encryptedData === false) {
+
+            if ($encryptedPayload === false) {
                 throw new EncryptionException('Failed to encrypt the data');
             }
 
-            // Prepend the nonce, and hex encode
-            $ciphertext = sodium_bin2hex($nonce . $encryptedData);
-
-            // Return the encrypted data
-            return $ciphertext;
-        } catch (Exception $e) {
-            // Rethrow the exception
-            throw $e;
+            return sodium_bin2hex($nonce . $encryptedPayload);
         } finally {
-            // Wipe sensitive data
-            if ($plaintext !== '') {
-                sodium_memzero($plaintext);
-            }
-            if ($key !== '') {
-                sodium_memzero($key);
-            }
-            if ($salt !== '') {
-                sodium_memzero($salt);
-            }
-            if ($derivedKey !== '') {
-                sodium_memzero($derivedKey);
-            }
-            if ($nonce !== '') {
-                sodium_memzero($nonce);
-            }
-            if ($encryptedData !== '') {
-                sodium_memzero($encryptedData);
-            }
+            self::wipeBuffer($derivedKey);
         }
     }
 
@@ -101,77 +70,39 @@ final class Cryptex
      * @param string $salt Salt value.
      * @return string Unencrypted data.
      *
+     * @throws SaltLengthException If the salt is not the expected length.
      * @throws NonceLengthException If the decoded data is not the expected length.
      * @throws DecryptionException If the data decryption fails.
+     * @throws \SodiumException If the ciphertext is malformed hex or a lower-level Sodium call fails.
      */
     public static function decrypt(string $ciphertext, string $key, string $salt): string
     {
         $derivedKey = '';
-        $decoded = '';
-        $nonce = '';
-        $encryptedPayload = '';
-
         try {
-            // Generate a derived binary key
             $derivedKey = self::generateDerivedKey($key, $salt);
+            $decodedPayload = sodium_hex2bin($ciphertext);
 
-            // Hex decode
-            $decoded = sodium_hex2bin($ciphertext);
-
-            // Check the decoded length
-            if (strlen($decoded) < self::NONCE_LENGTH) {
-                throw new NonceLengthException('Decoded data is not the expected length');
+            if (strlen($decodedPayload) < self::MINIMUM_DECODED_PAYLOAD_LENGTH) {
+                throw new NonceLengthException('Decoded data is shorter than the minimum payload length');
             }
 
-            // Get the nonce value from the decoded data
-            $nonce = substr(
-                $decoded,
-                0,
-                self::NONCE_LENGTH
-            );
+            $nonce = substr($decodedPayload, 0, self::NONCE_LENGTH);
+            $encryptedPayload = substr($decodedPayload, self::NONCE_LENGTH);
 
-            // Get the ciphertext from the decoded data
-            $encryptedPayload = substr(
-                $decoded,
-                self::NONCE_LENGTH
-            );
-
-            // Decrypt the data
             $plaintext = sodium_crypto_aead_xchacha20poly1305_ietf_decrypt(
                 $encryptedPayload,
                 '',
                 $nonce,
                 $derivedKey
             );
+
             if ($plaintext === false) {
                 throw new DecryptionException('Failed to decrypt the data');
             }
 
-            // Return the decrypted data
             return $plaintext;
-        } catch (Exception $e) {
-            // Rethrow the exception
-            throw $e;
         } finally {
-            // Wipe sensitive data
-            if ($key !== '') {
-                sodium_memzero($key);
-            }
-            if ($salt !== '') {
-                sodium_memzero($salt);
-            }
-            if ($derivedKey !== '') {
-                sodium_memzero($derivedKey);
-            }
-            if ($decoded !== '') {
-                sodium_memzero($decoded);
-            }
-            if ($nonce !== '') {
-                sodium_memzero($nonce);
-            }
-            if ($encryptedPayload !== '') {
-                sodium_memzero($encryptedPayload);
-            }
+            self::wipeBuffer($derivedKey);
         }
     }
 
@@ -180,15 +111,11 @@ final class Cryptex
      *
      * @return string Random salt value of length SODIUM_CRYPTO_PWHASH_SALTBYTES.
      *
-     * @throws Exception If an error occurs while generating the salt value.
+     * @throws \Random\RandomException If an error occurs while generating the salt value.
      */
     public static function generateSalt(): string
     {
-        try {
-            return random_bytes(self::SALT_LENGTH);
-        } catch (Exception $e) {
-            throw $e;
-        }
+        return random_bytes(self::SALT_LENGTH);
     }
 
     /**
@@ -199,45 +126,39 @@ final class Cryptex
      * @return string Derived binary key.
      *
      * @throws SaltLengthException If the salt is not the expected length.
-     * @throws Exception If an error occurs while generating the derived binary key.
+     * @throws \SodiumException If an error occurs while generating the derived binary key.
      */
     private static function generateDerivedKey(string $key, string $salt): string
     {
-        $derivedKey = '';
+        self::assertValidSaltLength($salt);
 
-        try {
-            // Salt length requirement check
-            if (strlen($salt) !== self::SALT_LENGTH) {
-                throw new SaltLengthException('Salt is not the expected length');
-            }
+        return sodium_crypto_pwhash(
+            \SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_KEYBYTES,
+            $key,
+            $salt,
+            \SODIUM_CRYPTO_PWHASH_OPSLIMIT_INTERACTIVE,
+            \SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE,
+            \SODIUM_CRYPTO_PWHASH_ALG_ARGON2ID13
+        );
+    }
 
-            // Generate the derived binary key
-            $derivedKey = sodium_crypto_pwhash(
-                SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_KEYBYTES,
-                $key,
-                $salt,
-                SODIUM_CRYPTO_PWHASH_OPSLIMIT_INTERACTIVE,
-                SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE,
-                SODIUM_CRYPTO_PWHASH_ALG_ARGON2ID13
-            );
-
-            // Return the derived binary key
-            return $derivedKey;
-        } catch (Exception $e) {
-            // Rethrow the exception
-            throw $e;
-        } finally {
-            // Wipe sensitive data
-            if ($key !== '') {
-                sodium_memzero($key);
-            }
-            if ($salt !== '') {
-                sodium_memzero($salt);
-            }
-            if ($derivedKey !== '') {
-                sodium_memzero($derivedKey);
-            }
+    /**
+     * @throws SaltLengthException If the salt is not the expected length.
+     */
+    private static function assertValidSaltLength(string $salt): void
+    {
+        if (strlen($salt) !== self::SALT_LENGTH) {
+            throw new SaltLengthException('Salt is not the expected length');
         }
+    }
+
+    private static function wipeBuffer(string &$buffer): void
+    {
+        if ($buffer === '') {
+            return;
+        }
+
+        sodium_memzero($buffer);
     }
 }
 
