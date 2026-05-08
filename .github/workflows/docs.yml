@@ -17,6 +17,7 @@ concurrency:
 
 jobs:
   generate-and-deploy:
+    if: github.repository == 'michaelmawhinney/cryptex'
     runs-on: ubuntu-latest
     steps:
       # Checkout main branch
