@@ -3,7 +3,7 @@ name: Generate Docs and Deploy to Pages
 on:
   pull_request:
     branches:
-      - master
+      - main
     types:
       - closed
 
@@ -22,11 +22,11 @@ jobs:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
-      # Checkout master branch
-      - name: Checkout master branch
+      # Checkout main branch
+      - name: Checkout main branch
         uses: actions/checkout@v6
         with:
-          ref: master
+          ref: main
 
       # Generate docs using phpDocumentor
       - name: Build with phpDocumentor
