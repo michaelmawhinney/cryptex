@@ -1,11 +1,10 @@
 name: Generate Docs and Deploy to Pages
 
 on:
-  pull_request:
+  push:
     branches:
       - main
-    types:
-      - closed
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -18,8 +17,6 @@ concurrency:
 
 jobs:
   generate-and-deploy:
-    # Only run if PR is merged
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       # Checkout main branch
