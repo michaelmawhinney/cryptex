@@ -40,6 +40,10 @@ final class Cryptex
      */
     public static function encrypt(string $plaintext, string $key, string $salt): string
     {
+        $derivedKey = '';
+        $nonce = '';
+        $encryptedData = '';
+
         try {
             // Generate a derived binary key
             $derivedKey = self::generateDerivedKey($key, $salt);
@@ -68,10 +72,24 @@ final class Cryptex
             throw $e;
         } finally {
             // Wipe sensitive data
-            sodium_memzero($plaintext);
-            sodium_memzero($key);
-            sodium_memzero($salt);
-            sodium_memzero($derivedKey);
+            if ($plaintext !== '') {
+                sodium_memzero($plaintext);
+            }
+            if ($key !== '') {
+                sodium_memzero($key);
+            }
+            if ($salt !== '') {
+                sodium_memzero($salt);
+            }
+            if ($derivedKey !== '') {
+                sodium_memzero($derivedKey);
+            }
+            if ($nonce !== '') {
+                sodium_memzero($nonce);
+            }
+            if ($encryptedData !== '') {
+                sodium_memzero($encryptedData);
+            }
         }
     }
 
@@ -88,6 +106,11 @@ final class Cryptex
      */
     public static function decrypt(string $ciphertext, string $key, string $salt): string
     {
+        $derivedKey = '';
+        $decoded = '';
+        $nonce = '';
+        $encryptedPayload = '';
+
         try {
             // Generate a derived binary key
             $derivedKey = self::generateDerivedKey($key, $salt);
@@ -101,24 +124,21 @@ final class Cryptex
             }
 
             // Get the nonce value from the decoded data
-            $nonce = mb_substr(
+            $nonce = substr(
                 $decoded,
                 0,
-                self::NONCE_LENGTH,
-                '8bit'
+                self::NONCE_LENGTH
             );
 
             // Get the ciphertext from the decoded data
-            $ciphertext = mb_substr(
+            $encryptedPayload = substr(
                 $decoded,
-                self::NONCE_LENGTH,
-                null,
-                '8bit'
+                self::NONCE_LENGTH
             );
 
             // Decrypt the data
             $plaintext = sodium_crypto_aead_xchacha20poly1305_ietf_decrypt(
-                $ciphertext,
+                $encryptedPayload,
                 '',
                 $nonce,
                 $derivedKey
@@ -134,9 +154,24 @@ final class Cryptex
             throw $e;
         } finally {
             // Wipe sensitive data
-            sodium_memzero($key);
-            sodium_memzero($salt);
-            sodium_memzero($derivedKey);
+            if ($key !== '') {
+                sodium_memzero($key);
+            }
+            if ($salt !== '') {
+                sodium_memzero($salt);
+            }
+            if ($derivedKey !== '') {
+                sodium_memzero($derivedKey);
+            }
+            if ($decoded !== '') {
+                sodium_memzero($decoded);
+            }
+            if ($nonce !== '') {
+                sodium_memzero($nonce);
+            }
+            if ($encryptedPayload !== '') {
+                sodium_memzero($encryptedPayload);
+            }
         }
     }
 
@@ -150,12 +185,9 @@ final class Cryptex
     public static function generateSalt(): string
     {
         try {
-            $salt = random_bytes(self::SALT_LENGTH);
-            return $salt;
+            return random_bytes(self::SALT_LENGTH);
         } catch (Exception $e) {
             throw $e;
-        } finally {
-            sodium_memzero($salt);
         }
     }
 
@@ -171,6 +203,8 @@ final class Cryptex
      */
     private static function generateDerivedKey(string $key, string $salt): string
     {
+        $derivedKey = '';
+
         try {
             // Salt length requirement check
             if (strlen($salt) !== self::SALT_LENGTH) {
@@ -194,9 +228,15 @@ final class Cryptex
             throw $e;
         } finally {
             // Wipe sensitive data
-            sodium_memzero($key);
-            sodium_memzero($salt);
-            sodium_memzero($derivedKey);
+            if ($key !== '') {
+                sodium_memzero($key);
+            }
+            if ($salt !== '') {
+                sodium_memzero($salt);
+            }
+            if ($derivedKey !== '') {
+                sodium_memzero($derivedKey);
+            }
         }
     }
 }
