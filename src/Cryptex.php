@@ -5,19 +5,9 @@ declare(strict_types=1);
 namespace cryptex;
 
 /**
- * Cryptex performs 2-way authenticated encryption using XChaCha20 + Poly1305.
+ * Authenticated encryption with XChaCha20-Poly1305.
  *
- * This class leverages the Sodium crypto library, added to PHP in version 7.2.
- * A salt value of length SODIUM_CRYPTO_PWHASH_SALTBYTES is required and should
- * be randomly generated with the included generateSalt() function or another
- * secure function like random_bytes().
- *
- * @category Encryption/Decryption
- * @package Cryptex
- * @author Michael Mawhinney
- * @copyright 2023
- * @license https://opensource.org/licenses/MIT/ MIT
- * @version 4.0.0
+ * Use a salt of length SODIUM_CRYPTO_PWHASH_SALTBYTES when deriving the key.
  */
 final class Cryptex
 {
@@ -27,17 +17,18 @@ final class Cryptex
     private const MINIMUM_DECODED_PAYLOAD_LENGTH = self::NONCE_LENGTH + self::TAG_LENGTH;
 
     /**
-     * Encrypts data using XChaCha20 + Poly1305 (from the Sodium crypto library).
+     * Encrypts plaintext with a key derived from the supplied salt.
      *
-     * @param string $plaintext Unencrypted data.
-     * @param string $key Encryption key.
-     * @param string $salt Salt value of length SODIUM_CRYPTO_PWHASH_SALTBYTES.
-     * @return string Encrypted data (hex-encoded).
+     * Returns a hex-encoded nonce concatenated with the authenticated ciphertext.
      *
-     * @throws EncryptionException If the data encryption fails.
-     * @throws SaltLengthException If the salt is not the expected length.
-     * @throws \Random\RandomException If an error occurs while generating the nonce.
-     * @throws \SodiumException If a lower-level Sodium call fails.
+     * @param string $plaintext Plaintext to encrypt.
+     * @param string $key Passphrase or key material.
+     * @param string $salt Salt of length SODIUM_CRYPTO_PWHASH_SALTBYTES.
+     * @return string Hex-encoded nonce and ciphertext.
+     * @throws EncryptionException If encryption fails.
+     * @throws SaltLengthException If the salt length is invalid.
+     * @throws \Random\RandomException If nonce generation fails.
+     * @throws \SodiumException If key derivation or encryption fails.
      */
     public static function encrypt(string $plaintext, string $key, string $salt): string
     {
@@ -63,17 +54,16 @@ final class Cryptex
     }
 
     /**
-     * Authenticates and decrypts data encrypted by Cryptex (XChaCha20+Poly1305).
+     * Decrypts a hex-encoded nonce and ciphertext produced by encrypt().
      *
-     * @param string $ciphertext Encrypted data.
-     * @param string $key Encryption key.
-     * @param string $salt Salt value.
-     * @return string Unencrypted data.
-     *
-     * @throws SaltLengthException If the salt is not the expected length.
-     * @throws NonceLengthException If the decoded data is not the expected length.
-     * @throws DecryptionException If the data decryption fails.
-     * @throws \SodiumException If the ciphertext is malformed hex or a lower-level Sodium call fails.
+     * @param string $ciphertext Hex-encoded nonce and ciphertext.
+     * @param string $key Passphrase or key material.
+     * @param string $salt Salt of length SODIUM_CRYPTO_PWHASH_SALTBYTES.
+     * @return string Plaintext.
+     * @throws SaltLengthException If the salt length is invalid.
+     * @throws NonceLengthException If the decoded payload is too short.
+     * @throws DecryptionException If authentication fails.
+     * @throws \SodiumException If hex decoding or key derivation fails.
      */
     public static function decrypt(string $ciphertext, string $key, string $salt): string
     {
@@ -107,11 +97,10 @@ final class Cryptex
     }
 
     /**
-     * Generates a salt value.
+     * Generates a random salt.
      *
-     * @return string Random salt value of length SODIUM_CRYPTO_PWHASH_SALTBYTES.
-     *
-     * @throws \Random\RandomException If an error occurs while generating the salt value.
+     * @return string Random salt of length SODIUM_CRYPTO_PWHASH_SALTBYTES.
+     * @throws \Random\RandomException If salt generation fails.
      */
     public static function generateSalt(): string
     {
@@ -119,14 +108,13 @@ final class Cryptex
     }
 
     /**
-     * Generates a derived binary key using Argon2id v1.3.
+     * Derives the AEAD key from the supplied key material and salt.
      *
-     * @param string $key Encryption key.
+     * @param string $key Passphrase or key material.
      * @param string $salt Salt value of length SODIUM_CRYPTO_PWHASH_SALTBYTES.
      * @return string Derived binary key.
-     *
      * @throws SaltLengthException If the salt is not the expected length.
-     * @throws \SodiumException If an error occurs while generating the derived binary key.
+     * @throws \SodiumException If key derivation fails.
      */
     private static function generateDerivedKey(string $key, string $salt): string
     {
@@ -142,9 +130,7 @@ final class Cryptex
         );
     }
 
-    /**
-     * @throws SaltLengthException If the salt is not the expected length.
-     */
+    /** @throws SaltLengthException If the salt length is invalid. */
     private static function assertValidSaltLength(string $salt): void
     {
         if (strlen($salt) !== self::SALT_LENGTH) {
@@ -162,32 +148,17 @@ final class Cryptex
     }
 }
 
-/**
- * Class EncryptionException
- * Custom exception class for encryption errors.
- */
+/** Thrown when encryption fails. */
 class EncryptionException extends \Exception {}
 
-/**
- * Class EncodingException
- * Custom exception class for encoding errors.
- */
+/** Thrown when encoding or decoding fails. */
 class EncodingException extends EncryptionException {}
 
-/**
- * Class NonceLengthException
- * Custom exception class for nonce length errors.
- */
+/** Thrown when the decoded payload is too short. */
 class NonceLengthException extends EncryptionException {}
 
-/**
- * Class DecryptionException
- * Custom exception class for decryption errors.
- */
+/** Thrown when authentication fails. */
 class DecryptionException extends EncryptionException {}
 
-/**
- * Class SaltLengthException
- * Custom exception class for salt length errors.
- */
+/** Thrown when the supplied salt length is invalid. */
 class SaltLengthException extends EncryptionException {}

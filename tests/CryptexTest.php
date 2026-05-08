@@ -48,9 +48,6 @@ final class CryptexTest extends TestCase
         $this->assertNotSame($this->ciphertext, $otherCiphertext);
     }
 
-    /**
-     * @dataProvider invalidSaltLengthProvider
-     */
     #[DataProvider('invalidSaltLengthProvider')]
     public function testEncryptRejectsInvalidSaltLength(string $salt): void
     {
@@ -59,9 +56,6 @@ final class CryptexTest extends TestCase
         Cryptex::encrypt($this->plaintext, $this->key, $salt);
     }
 
-    /**
-     * @dataProvider invalidSaltLengthProvider
-     */
     #[DataProvider('invalidSaltLengthProvider')]
     public function testDecryptRejectsInvalidSaltLength(string $salt): void
     {
@@ -158,9 +152,6 @@ final class CryptexTest extends TestCase
         $this->assertSame($plaintext, Cryptex::decrypt($ciphertext, $this->key, $this->salt));
     }
 
-    /**
-     * @dataProvider invalidPlaintextProvider
-     */
     #[DataProvider('invalidPlaintextProvider')]
     public function testEncryptRejectsInvalidPlaintextTypes($plaintext): void
     {
@@ -169,9 +160,6 @@ final class CryptexTest extends TestCase
         Cryptex::encrypt($plaintext, $this->key, $this->salt);
     }
 
-    /**
-     * @dataProvider invalidCiphertextProvider
-     */
     #[DataProvider('invalidCiphertextProvider')]
     public function testDecryptRejectsInvalidCiphertextTypes($ciphertext): void
     {
@@ -180,9 +168,6 @@ final class CryptexTest extends TestCase
         Cryptex::decrypt($ciphertext, $this->key, $this->salt);
     }
 
-    /**
-     * @dataProvider invalidKeyProvider
-     */
     #[DataProvider('invalidKeyProvider')]
     public function testEncryptRejectsInvalidKeyTypes($key): void
     {
@@ -191,9 +176,6 @@ final class CryptexTest extends TestCase
         Cryptex::encrypt($this->plaintext, $key, $this->salt);
     }
 
-    /**
-     * @dataProvider invalidKeyProvider
-     */
     #[DataProvider('invalidKeyProvider')]
     public function testDecryptRejectsInvalidKeyTypes($key): void
     {
@@ -202,9 +184,6 @@ final class CryptexTest extends TestCase
         Cryptex::decrypt($this->ciphertext, $key, $this->salt);
     }
 
-    /**
-     * @dataProvider invalidSaltTypeProvider
-     */
     #[DataProvider('invalidSaltTypeProvider')]
     public function testEncryptRejectsInvalidSaltTypes($salt): void
     {
@@ -213,9 +192,6 @@ final class CryptexTest extends TestCase
         Cryptex::encrypt($this->plaintext, $this->key, $salt);
     }
 
-    /**
-     * @dataProvider invalidSaltTypeProvider
-     */
     #[DataProvider('invalidSaltTypeProvider')]
     public function testDecryptRejectsInvalidSaltTypes($salt): void
     {
