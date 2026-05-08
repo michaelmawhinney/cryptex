@@ -4,11 +4,15 @@
 
 Cryptex is a simple PHP class that performs 2-way authenticated encryption using XChaCha20 + Poly1305.
 
+Version 5.0.0 is a modernization and hardening release. It keeps the v4 public API, the v4 hex ciphertext format, and external salt semantics intact.
+
 
 # Requirements
 
 * PHP 8.3 or newer
 * `ext-sodium`
+
+These requirements apply to v5.0.0 and later. Existing v4-style ciphertexts remain decryptable with the same API, but v5 does not introduce a new ciphertext envelope or transport encoding.
 
 
 # Installation
@@ -39,12 +43,12 @@ try {
     // Generate a secure random salt value
     $salt = Cryptex::generateSalt();
 
-    // Encrypt the plaintext
+    // Encrypt the plaintext using the preserved v4-style API and hex ciphertext output
     $ciphertext = Cryptex::encrypt($plaintext, $key, $salt);
     // example result: 
     // 4c406399a8830dbf670832b298980280d71bfb8cba53246ed45c9b6e6fc753bc100da3d10d4bf0d406d8afd18b8a5a79f44e50424ed0970914490706418c5725258e
 
-    // Decrypt the ciphertext
+    // Decrypt the ciphertext with the same v4-style API
     $result = Cryptex::decrypt($ciphertext, $key, $salt);
 
 } catch (Exception $e) {
@@ -69,6 +73,10 @@ if (hash_equals($plaintext, $result)) {
 
 // The above example will output: Pass
 ```
+
+## Release Notes
+
+See [CHANGELOG.md](CHANGELOG.md) for the v5.0.0 release summary and compatibility notes.
 
 
 # Testing
